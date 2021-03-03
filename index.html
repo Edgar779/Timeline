@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="./jquery.timeline-master/dist/jquery.timeline.min.css">
+    <!-- <script src="//code.jquery.com/jquery.min.js"></script> -->
+
+    <script src="./jquery.timeline-master/dist/jquery.timeline.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+</head>
+
+<body>
+    <div id="main-content" style="margin: 50px auto 0; padding: 15px;"></div>
+
+    <!-- <div id="myTimeline" onchange="changeElem()">
+        <ul class="timeline-events">
+         
+        </ul>
+    </div> -->
+    <script>
+        // global.window = window
+        // global.document = document
+        // const $ = global.$ = require('jquery')(window)
+
+        // $.fn = { 'Timeline': {} }
+
+        // let $timeline = $.fn.Timeline,
+        //     timelineMethods = $timeline.Constructor.prototype,
+        //     defaultOptions = $timeline.Constructor.Default
+
+        let $el = $('<div id="myTimeline"><ul class="timeline-events"></ul></div>');
+        let getStartTime = localStorage.getItem('startTime');
+        let getEndTime = localStorage.getItem('endTime');
+        if (getStartTime == null) {
+            getStartTime = "05:00:00"
+        }
+        if (getEndTime == null) {
+            getEndTime = "10:00:00"
+        }
+
+        let _beginToday = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 0, 0, 0);
+        let dateset = {
+            'today': [_beginToday, new Date(_beginToday.getTime() + (24 * 60 * 60 * 1000 - 1)), 'hour', 60],
+        }
+        let datesetKey = 'today';
+        let _begin = dateset[datesetKey].length > 0 ? dateset[datesetKey][0] : 'currently';
+        let _end = dateset[datesetKey].length > 1 ? dateset[datesetKey][1] : 'auto';
+        let _scale = dateset[datesetKey].length > 2 ? dateset[datesetKey][2] : 'day';
+        let _mings = dateset[datesetKey].length > 3 ? dateset[datesetKey][3] : 44;
+
+        defopts = {
+            type: "mixed",
+            startDatetime: _begin,
+            endDatetime: _end,
+            scale: _scale,
+            minGridSize: 60,
+            headline: {
+                locale: 'ja-JP',
+                format: { custom: '%Y年%B%d日 %H%M分' },
+            },
+            // displays sidebar
+
+            sidebar: {
+                sticky: true,
+                overlay: true,
+                list: [
+                    '<span style="margin:0 15px;">Program</span>',
+
+                ]
+            },
+
+            // displays ruler
+
+            ruler: {
+                truncateLowers: true, // T|F Ok
+                top: {
+                    lines: [
+                        //'millennia',
+                        //'century',
+                        //'decade',
+                        //'lustrum',
+                        'years',
+                        'months',
+                        //'weeks',
+                        'days',
+                        'weekdays',
+                        'hours',
+                        //'half-hour',
+                        //'quarter-hour',
+                        'minutes',
+                        'seconds',
+                    ],
+                    format: {
+                        //timeZone: 'UTC', // 'Europe/Berlin', // 'Asia/Shanghai',
+                        hour12: false,
+                        millennium: 'ordinal',
+                        century: 'ordinal',
+                        decade: 'ordinal',
+                        lustrum: 'ordinal',
+                        year: 'numeric', // 'numeric', '2-digit' or 'zerofill'
+                        month: 'long', // 'numeric', '2-digit', 'narrow', 'short', 'long'
+                        week: 'ordinal',
+                        day: 'ordinal', // 'numeric', '2-digit' or 'ordinal'
+                        weekday: 'long', // 'narrow', 'short', 'long'
+                        hour: 'fulltime', // 'numeric', '2-digit' or 'fulltime'
+                        minute: '2-digit', // 'numeric', '2-digit' or 'fulltime'
+                        second: '2-digit', // 'numeric', '2-digit' or 'fulltime'
+                        millisecond: 'narrow',
+                        //timeZoneName: 'short', // 'short', 'long'
+                    }
+                },
+                bottom: {
+                    lines: ['day'],
+
+                    format: {
+                        hour12: false,
+                        year: '2-digit',
+                        month: 'short',
+                        weekday: 'narrow',
+                        day: 'ordinal',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                    }
+                },
+            },
+
+
+
+            // displays footer
+
+            footer: {
+
+                display: true,
+
+                content: "",
+
+                range: true,
+
+                locale: "en-US",
+
+                format: { hour12: false }
+
+            },
+            // effects: {
+            //         presentTime: true, // T|F Ok
+            //         hoverEvent: false,
+            //         stripedGridRow: true, // T|F Ok
+            //         horizontalGridStyle: 'none', // solid|dotted|none Ok
+            //         verticalGridStyle: 'dotted', // solid|dotted|none Ok
+            //     },
+            //     colorScheme: {
+            //         event: {
+            //             text: 'red',
+            //             border: 'green',
+            //             background: 'blue',
+            //         },
+            //         hookEventColors: ( event, defaults ) => { /* console.log( event ); */ if ( event.eventId == 29 ) { defaults.text = 'white'; }; return defaults; },
+            //     },
+            // displays event meta
+
+            eventMeta: {
+
+                display: false,
+
+                scale: "day",
+
+                locale: "en-US",
+
+                format: { hour12: false },
+
+                content: ""
+
+            },
+
+
+
+            // event data
+            // _beginToday = new Date( new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 0, 0, 0 ),
+
+            eventData: [{
+                start: `${_beginToday.getFullYear()}/${_beginToday.getMonth() + 1}/${_beginToday.getDate()} ${getStartTime}`, end: `${_beginToday.getFullYear()}/${_beginToday.getMonth() + 1}/${_beginToday.getDate()} ${getEndTime}`, row: 1, label: `<table id='evt-1' class="table" onclick='openModal()' style="width: 100%; border: 1px solid black;">
+                    <th><input id="test" type="text"></input></th>
+                    <th><input type="text"></input></th>
+                    <tbody>
+                        <tr>
+                            <td style="background-color: green; width: 240px">97</td>
+                            <td style="background-color: yellow; width: 20px">2</td>
+                            <td style="background-color: red; width: 240px">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                    </tbody>
+                </table>`, bgColor: 'white', color: 'green'
+            },
+            {
+                start: `${_beginToday.getFullYear()}/${_beginToday.getMonth() + 1}/${_beginToday.getDate()} 12:00:00`, end: `${_beginToday.getFullYear()}/${_beginToday.getMonth() + 1}/${_beginToday.getDate()} 16:00:00`, row: 1, label: `<table id='evt-8' class="table"  style="width: 100%; border: 1px solid black;">
+                    <th><input id="test" type="text"></input></th>
+                    <th><input type="text"></input></th>
+                    <tbody>
+                        <tr>
+                            <td style="background-color: black; width: 240px">50</td>
+                            <td style="background-color: yellow; width: 20px">2</td>
+                            <td style="background-color: red; width: 240px">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">50</td>
+                            <td style="background-color: yellow; width: 15px">50</td>
+                            <td style="background-color: red;">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">50</td>
+                            <td style="background-color: yellow; width: 15px">50</td>
+                            <td style="background-color: red;">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">50</td>
+                            <td style="background-color: yellow; width: 15px">50</td>
+                            <td style="background-color: red;">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">50</td>
+                            <td style="background-color: yellow; width: 15px">50</td>
+                            <td style="background-color: red;">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">50</td>
+                            <td style="background-color: yellow; width: 15px">50</td>
+                            <td style="background-color: red;">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">50</td>
+                            <td style="background-color: yellow; width: 15px">50</td>
+                            <td style="background-color: red;">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">50</td>
+                            <td style="background-color: yellow; width: 15px">50</td>
+                            <td style="background-color: red;">50</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: green;">97</td>
+                            <td style="background-color: yellow; width: 15px">2</td>
+                            <td style="background-color: red;">97</td>
+                        </tr>
+                    </tbody>
+                </table>`, bgColor: 'white', color: 'green'
+            },
+            ],
+
+
+
+            // enables/disables effects
+
+            effects: {
+
+                presentTime: true,
+
+                hoverEvent: true,
+
+                stripedGridRow: true,
+
+                horizontalGridStyle: 'dotted',
+
+                verticalGridStyle: 'solid',
+
+            },
+
+
+
+            colorScheme: {// Added new option since v2.0.0
+
+                event: {
+
+                    text: "# A40",
+
+                    border: "#6C D",
+
+                    background: "#E7E7E7"
+
+                },
+
+                hookEventColors: () => null,// Added instead of merging setColorEvent of PR#37 since v2.0.0
+
+            },
+
+            // default view range
+            range: 3,
+            // numer of timeline rows
+            rows: 1,
+            // height of row
+            rowHeight: 257,
+            // width of timeline
+            width: "auto",
+            // height of timeline
+            height: "auto",
+            // min size of <a href="https://www.jqueryscript.net/tags.php?/grid/">grid</a>
+            minGridSize: 30,
+            // margin size
+            marginHeight: 2,
+            // "left", "center", "right", "current", "latest" or specific event id
+            rangeAlign: "center",
+            // "default", false and selector
+            loader: "default",
+            // loading message
+            loadingMessage: "",
+            // hides scrollbar
+            hide: false,
+            // "session" or "local"
+            storage: "session",
+            // loads cached events during reloading
+            reloadCacheKeep: true,
+            // zooms the scale of the timeline by double clicking
+            zoom: true,
+            // wraps new scale in the timeline container when zooming
+            wrapScale: true,
+            // 0: Sunday, 1: Monday, ... 6: Saturday
+            firstDayOfWeek: 0,
+            // "canvas" or "d3.js"
+            engine: "canvas",
+            // avoid validation of the maximum of the scale grids
+            disableLimitter: false,
+            // debug mode
+            debug: false
+        }
+
+        let $jqtl = $el.Timeline(defopts);
+        // timeline = $timeline.Constructor._getInstance($jqtl[0]),
+        // spy = sinon.spy($timeline.Constructor.prototype, '_calcVars')
+
+        // console.log( 'Opts:', timeline._config )
+        // console.log( 'Props:', timeline._instanceProps )
+        //let stub = sinon.stub( timeline, '_calcVars' )
+
+        // $jqtl.Timeline('initialized', (elem, opts) => {
+        // console.log( elem, opts )
+
+        // $(elem).Timeline('showLoader')
+        // })
+
+        //assert.ok( spy.called, 'method is called once' )
+        $('#main-content').empty().append($jqtl).css('display', 'block');
+        function test(){
+            console.log('a');
+        }
+        // let evtOne = document.getElementById('evt-1');
+        // console.log(evtOne);
+        // evtOne.addEventListener('click', () => {
+        // console.log(evtOne.style.width);
+
+        // let tableParentDiv = evtOne.getElementsByClassName('jqtl-event-label')[0];
+        // // console.log(tableParentDiv);
+        // let table = tableParentDiv.getElementsByClassName('table')[0];
+        // // console.log(table);
+        // table.style.width = evtOne.width;
+        //     // console.log(new Date(_beginToday.getTime() + (24 * 60 * 60 * 1000 - 1)), 'hour', 60);
+        //     // console.log(defopts.eventData[0].start = '2021/3/2 12:30:00');
+        //     // console.log('ok');
+        //     alert('ok');
+        // });
+        // $("#myTimeline").timeline('show');
+        (function (window) {
+            var last = +new Date();
+            var delay = 100; // default delay
+
+            // Manage event queue
+            var stack = [];
+
+            function callback() {
+                var now = +new Date();
+                if (now - last > delay) {
+                    for (var i = 0; i < stack.length; i++) {
+                        stack[i]();
+                    }
+                    last = now;
+                }
+            }
+
+            // Public interface
+            var onDomChange = function (fn, newdelay) {
+                if (newdelay) delay = newdelay;
+                stack.push(fn);
+            };
+
+            // Naive approach for compatibility
+            function naive() {
+
+                var last = document.getElementById('myTimeline');
+                var lastlen = last.length;
+                var timer = setTimeout(function check() {
+
+                    // get current state of the document
+                    var current = document.getElementById('myTimeline');
+                    var len = current.length;
+
+                    // if the length is different
+                    // it's fairly obvious
+                    if (len != lastlen) {
+                        // just make sure the loop finishes early
+                        last = [];
+                    }
+
+                    // go check every element in order
+                    for (var i = 0; i < len; i++) {
+                        if (current[i] !== last[i]) {
+                            callback();
+                            last = current;
+                            lastlen = len;
+                            break;
+                        }
+                    }
+
+                    // over, and over, and over again
+                    setTimeout(check, delay);
+
+                }, delay);
+            }
+
+            //
+            //  Check for mutation events support
+            //
+
+            var support = {};
+
+            var el = document.documentElement;
+            var remain = 3;
+
+            // callback for the tests
+            function decide() {
+                if (support.DOMNodeInserted) {
+                    window.addEventListener("DOMContentLoaded", function () {
+                        if (support.DOMSubtreeModified) { // for FF 3+, Chrome
+                            el.addEventListener('DOMSubtreeModified', callback, false);
+                        } else { // for FF 2, Safari, Opera 9.6+
+                            el.addEventListener('DOMNodeInserted', callback, false);
+                            el.addEventListener('DOMNodeRemoved', callback, false);
+                        }
+                    }, false);
+                } else if (document.onpropertychange) { // for IE 5.5+
+                    document.onpropertychange = callback;
+                } else { // fallback
+                    naive();
+                }
+            }
+
+            // checks a particular event
+            function test(event) {
+                el.addEventListener(event, function fn() {
+                    support[event] = true;
+                    el.removeEventListener(event, fn, false);
+                    if (--remain === 0) decide();
+                }, false);
+            }
+
+            // attach test events
+            if (window.addEventListener) {
+                test('DOMSubtreeModified');
+                test('DOMNodeInserted');
+                test('DOMNodeRemoved');
+            } else {
+                decide();
+            }
+
+            // do the dummy test
+            var dummy = document.createElement("div");
+            el.appendChild(dummy);
+            el.removeChild(dummy);
+
+            // expose
+            window.onDomChange = onDomChange;
+        })(window);
+
+        onDomChange(function () {
+            setTimeout(() => {
+                let evtOne = document.getElementById('evt-1');
+
+                let tableParentDiv = evtOne.getElementsByClassName('jqtl-event-label')[0];
+
+                let table = tableParentDiv.getElementsByClassName('table')[0];
+                table.style.width = evtOne.style.width;
+
+            }, 100)
+
+        });
+        let evtOne = document.getElementById('evt-1');
+
+        evtOne.addEventListener('click', async () => {
+            await Swal.fire({
+                showCloseButton: true,
+                showCancelButton: true,
+                cancelButtonText: 'Отменить',
+                confirmButtonText: 'Сохранить',
+                title: 'Заполните данные:',
+                html: `<div class="data-wrap">
+                          <p class="data-row"><label for="data-quantity">Start (0 - 24): </label><input type="number" name="" id="startTime" min="0" max="24"></p>
+                          <p class="data-row"><label for="data-quantity">End (0 - 24): </label><input type="number" name="" id="endTime" min="0" max="24"></p>
+
+                          
+                          </div>`,
+
+                preConfirm: async () => {
+
+                    let startTime = document.getElementById('startTime').value;
+                    let endTime = document.getElementById('endTime').value;
+
+                    let testStartTime = startTime + ':00:00';
+                    let testEndTime = endTime + ':00:00';
+                    if (endTime < startTime) {
+                        let override = startTime;
+                        startTime = endTime;
+                        endTime = override;
+                    }
+                    if (startTime < 10) {
+                        if (endTime < 10) {
+                            testEndTime = '0' + endTime + ':00:00'
+                        }
+                        testStartTime = '0' + startTime + ':00:00'
+                    }
+
+                    let setStartTime = localStorage.setItem("startTime", `${testStartTime}`);
+                    let setEndTime = localStorage.setItem("endTime", `${testEndTime}`);
+
+
+
+                }
+            })
+
+
+            location.reload();
+
+
+        })
+      
+        let evtTwo = document.getElementById('evt-8');
+        // console.log(evtTwo);
+        evtTwo.addEventListener('click', (e) => {
+            console.log(e.target);
+        })
+
+    </script>
+</body>
+
+</html>
